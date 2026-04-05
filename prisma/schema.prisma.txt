@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  accounts      Account[]
+  sessions      Session[]
+  orgMembers    OrgMember[]
+  chatMessages  ChatMessage[]
+  createdAt     DateTime  @default(now())
+}
+
+model Organization {
+  id            String   @id @default(cuid())
+  name          String
+  ownerId       String
+  createdAt     DateTime @default(now())
+  members       OrgMember[]
+  connections   Connection[]
+  brandProfile  BrandProfile?
+  competitors   Competitor[]
+  campaigns     Campaign[]
+  missions      Mission[]
+  chatMessages  ChatMessage[]
+  webhookEvents WebhookEvent[]
+  apiKeys       ApiKey[]
+  subscription  Subscription?
+}
+
+model OrgMember {
+  id     String       @id @default(cuid())
+  orgId  String
+  userId String
+  role   String       @default("member")
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+}
+
+model Connection {
+  id           String       @id @default(cuid())
+  orgId        String
+  provider     String
+  accessToken  String?      @db.Text
+  refreshToken String?      @db.Text
+  metadata     Json?
+  connectedAt  DateTime     @default(now())
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model BrandProfile {
+  id              String       @id @default(cuid())
+  orgId           String       @unique
+  logos           Json?
+  colors          Json?
+  brandVoice      String?      @db.Text
+  activeOffers    String?      @db.Text
+  targetAudience  String?      @db.Text
+  reportingNotes  String?      @db.Text
+  targetCpa       Float?
+  targetLeads     Int?
+  targetRoas      Float?
+  callTrackingNum String?
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model Competitor {
+  id        String       @id @default(cuid())
+  orgId     String
+  name      String
+  website   String?
+  facebook  String?
+  instagram String?
+  googleMap String?
+  yelp      String?
+  notes     String?      @db.Text
+  analysis  Json?
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id         String       @id @default(cuid())
+  orgId      String
+  platform   String
+  externalId String?
+  name       String
+  status     String       @default("active")
+  metrics    Json?
+  aiVerdict  Json?
+  createdAt  DateTime     @default(now())
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model Mission {
+  id          String       @id @default(cuid())
+  orgId       String
+  title       String
+  description String?      @db.Text
+  xp          Int          @default(100)
+  difficulty  Int          @default(1)
+  timeEstimate String?
+  status      String       @default("active")
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        String       @id @default(cuid())
+  orgId     String
+  userId    String
+  role      String
+  content   String       @db.Text
+  createdAt DateTime     @default(now())
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WebhookEvent {
+  id         String       @id @default(cuid())
+  orgId      String
+  provider   String
+  eventType  String
+  payload    Json
+  receivedAt DateTime     @default(now())
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id           String       @id @default(cuid())
+  orgId        String
+  provider     String
+  encryptedKey String       @db.Text
+  createdAt    DateTime     @default(now())
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+// ─── Subscription & Billing Models ──────────────────────────────
+
+model Subscription {
+  id                 String       @id @default(cuid())
+  orgId              String       @unique
+  plan               String       @default("starter") // starter, pro, enterprise
+  status             String       @default("trialing") // trialing, active, past_due, cancelled, paused
+  paymentProvider    String       @default("stripe") // stripe, paypal
+  stripeCustomerId   String?
+  stripeSubId        String?
+  stripePriceId      String?
+  paypalSubId        String?
+  paypalPlanId       String?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean      @default(false)
+  trialEndsAt        DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  org                Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  payments           Payment[]
+}
+
+model Payment {
+  id              String       @id @default(cuid())
+  subscriptionId  String
+  amount          Int          // in cents
+  currency        String       @default("usd")
+  status          String       // succeeded, failed, refunded, pending
+  provider        String       // stripe, paypal
+  providerPayId   String?      // stripe payment_intent or paypal sale id
+  invoiceId       String?
+  paidAt          DateTime?
+  createdAt       DateTime     @default(now())
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}

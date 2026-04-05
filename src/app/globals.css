@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #e2e8f0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
