@@ -22,7 +22,6 @@ const navSections = [
     label: 'OPERATIONS SNAPSHOT',
     items: [
       { name: 'Overview', href: '/dashboard', icon: 'LayoutDashboard' },
-      { name: 'Route Optimizer', href: '/dashboard/route-optimizer', icon: 'Map' },
       { name: 'Quick Launch', href: '/dashboard/quick-launch', icon: 'Rocket' },
     ],
   },
@@ -33,6 +32,7 @@ const navSections = [
       { name: 'Revenue & ROI', href: '/dashboard/revenue', icon: 'DollarSign' },
       { name: 'KPIs', href: '/dashboard/kpis', icon: 'BarChart3' },
       { name: 'Service Area', href: '/dashboard/service-area', icon: 'Map' },
+      { name: 'Route Optimizer', href: '/dashboard/route-optimizer', icon: 'Map' },
       { name: 'Google Profile', href: '/dashboard/google-profile', icon: 'MapPin' },
       { name: 'Review Requests', href: '/dashboard/reviews', icon: 'Star' },
       { name: 'Rival Radar', href: '/dashboard/competitors', icon: 'Search' },
