@@ -4,10 +4,10 @@ import Link from "next/link";
 
 const actions = [
   { icon: "🗺️", label: "Optimize Today's Route", desc: "Get the most efficient stop order for today", href: "/dashboard/route-optimizer", color: "bg-emerald-50 border-emerald-200 hover:bg-emerald-100" },
-  { icon: "📍", label: "Generate Leads", desc: "Find new customers near your routes", href: "/dashboard/lead-response", color: "bg-blue-50 border-blue-200 hover:bg-blue-100" },
-  { icon: "⭐", label: "Send Review Requests", desc: "Request reviews from recent clients", href: "/dashboard/reviews", color: "bg-amber-50 border-amber-200 hover:bg-amber-100" },
-  { icon: "📱", label: "Build an Ad", desc: "Create a Facebook or Google ad", href: "/dashboard/ad-quick-launch", color: "bg-purple-50 border-purple-200 hover:bg-purple-100" },
-  { icon: "💰", label: "Create a Quote", desc: "Generate a pricing quote for a prospect", href: "/dashboard/quotes", color: "bg-green-50 border-green-200 hover:bg-green-100" },
+  { icon: "📍", label: "Generate Leads", desc: "Find new customers near your routes", href: "/dashboard/lead-generation", color: "bg-blue-50 border-blue-200 hover:bg-blue-100" },
+  { icon: "⭐", label: "Send Review Requests", desc: "Request reviews from recent clients", href: "/dashboard/review-requests", color: "bg-amber-50 border-amber-200 hover:bg-amber-100" },
+  { icon: "📱", label: "Build an Ad", desc: "Create a Facebook or Google ad", href: "/dashboard/ad-builder", color: "bg-purple-50 border-purple-200 hover:bg-purple-100" },
+  { icon: "💰", label: "Create a Quote", desc: "Generate a pricing quote for a prospect", href: "/dashboard/quote-builder", color: "bg-green-50 border-green-200 hover:bg-green-100" },
   { icon: "📅", label: "Schedule a Post", desc: "Plan your next social media post", href: "/dashboard/post-scheduler", color: "bg-pink-50 border-pink-200 hover:bg-pink-100" },
   { icon: "🏆", label: "View Missions", desc: "Check your AI coaching missions", href: "/dashboard/missions", color: "bg-orange-50 border-orange-200 hover:bg-orange-100" },
   { icon: "🔍", label: "Check Competitors", desc: "See what competitors are doing", href: "/dashboard/competitors", color: "bg-red-50 border-red-200 hover:bg-red-100" },
