@@ -55,7 +55,7 @@ const navSections = [
       { name: 'Missions & Coaching', href: '/dashboard/missions', icon: 'Target' },
       { name: 'Lead Response', href: '/dashboard/lead-response', icon: 'Clock' },
       { name: 'Turf Tracker', href: '/dashboard/turf-tracker', icon: 'Crosshair' },
-      { name: 'Ad Quick Launch', href: '/dashboard/quick-launch', icon: 'Rocket' },
+      { name: 'Ad Quick Launch', href: '/dashboard/ad-quick-launch', icon: 'Rocket' },
       { name: 'Campaigns', href: '/dashboard/campaigns', icon: 'Megaphone' },
     ],
   },
