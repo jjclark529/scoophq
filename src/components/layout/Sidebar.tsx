@@ -19,6 +19,14 @@ const iconMap: Record<string, any> = {
 
 const navSections = [
   {
+    label: 'OPERATIONS SNAPSHOT',
+    items: [
+      { name: 'Overview', href: '/dashboard', icon: 'LayoutDashboard' },
+      { name: 'Route Optimizer', href: '/dashboard/route-optimizer', icon: 'Map' },
+      { name: 'Quick Launch', href: '/dashboard/quick-launch', icon: 'Rocket' },
+    ],
+  },
+  {
     label: 'BUSINESS',
     items: [
       { name: 'My Business', href: '/dashboard/business', icon: 'Building2' },
@@ -44,7 +52,6 @@ const navSections = [
   {
     label: 'MARKETING',
     items: [
-      { name: 'Overview', href: '/dashboard', icon: 'LayoutDashboard' },
       { name: 'Missions & Coaching', href: '/dashboard/missions', icon: 'Target' },
       { name: 'Lead Response', href: '/dashboard/lead-response', icon: 'Clock' },
       { name: 'Turf Tracker', href: '/dashboard/turf-tracker', icon: 'Crosshair' },
