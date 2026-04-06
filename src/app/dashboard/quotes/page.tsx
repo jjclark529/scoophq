@@ -41,55 +41,83 @@ type Quote = {
 
 // ─── Default pricing data (matches typical Excel layout) ─────────
 const defaultYardSizes = ['1–1,000 sqft', '1,001–2,000 sqft', '2,001–3,000 sqft', '3,001–4,000 sqft', '4,001–5,000 sqft', '5,001–6,000 sqft', '6,001–7,000 sqft', '7,001–8,000 sqft', '8,001–9,000 sqft', '9,001–10,000 sqft', '10,001+ sqft']
-const defaultDogCounts = ['1', '2', '3', '4+']
+const defaultDogCounts = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 const defaultFrequencies = ['Weekly', 'Bi-Weekly', 'Twice a Week', 'Once a Month', 'One-Time']
 
+// Helper: generate prices for dogs 4-10 by scaling base (4-dog) prices +8% per extra dog
+function scaleDogPrices(base4: Record<string, number>): Record<string, Record<string, number>> {
+  const result: Record<string, Record<string, number>> = {}
+  for (let d = 4; d <= 10; d++) {
+    const multiplier = 1 + (d - 4) * 0.08
+    const row: Record<string, number> = {}
+    for (const [freq, price] of Object.entries(base4)) {
+      row[freq] = Math.round(price * multiplier)
+    }
+    result[String(d)] = row
+  }
+  return result
+}
+
 const generateDefaultPricing = (): PricingTable => {
+  const base4Prices: Record<string, Record<string, number>> = {
+    '1–1,000 sqft': { 'Weekly': 55, 'Bi-Weekly': 44, 'Twice a Week': 88, 'Once a Month': 65, 'One-Time': 100 },
+    '1,001–2,000 sqft': { 'Weekly': 62, 'Bi-Weekly': 50, 'Twice a Week': 100, 'Once a Month': 75, 'One-Time': 112 },
+    '2,001–3,000 sqft': { 'Weekly': 70, 'Bi-Weekly': 56, 'Twice a Week': 112, 'Once a Month': 85, 'One-Time': 125 },
+    '3,001–4,000 sqft': { 'Weekly': 80, 'Bi-Weekly': 64, 'Twice a Week': 128, 'Once a Month': 95, 'One-Time': 140 },
+    '4,001–5,000 sqft': { 'Weekly': 88, 'Bi-Weekly': 70, 'Twice a Week': 140, 'Once a Month': 105, 'One-Time': 155 },
+    '5,001–6,000 sqft': { 'Weekly': 98, 'Bi-Weekly': 78, 'Twice a Week': 155, 'Once a Month': 115, 'One-Time': 170 },
+    '6,001–7,000 sqft': { 'Weekly': 108, 'Bi-Weekly': 86, 'Twice a Week': 172, 'Once a Month': 128, 'One-Time': 188 },
+    '7,001–8,000 sqft': { 'Weekly': 118, 'Bi-Weekly': 94, 'Twice a Week': 188, 'Once a Month': 140, 'One-Time': 205 },
+    '8,001–9,000 sqft': { 'Weekly': 128, 'Bi-Weekly': 102, 'Twice a Week': 205, 'Once a Month': 152, 'One-Time': 222 },
+    '9,001–10,000 sqft': { 'Weekly': 134, 'Bi-Weekly': 107, 'Twice a Week': 215, 'Once a Month': 160, 'One-Time': 232 },
+    '10,001+ sqft': { 'Weekly': 140, 'Bi-Weekly': 112, 'Twice a Week': 225, 'Once a Month': 168, 'One-Time': 245 },
+  }
+
   const basicPrices: Record<string, Record<string, Record<string, number>>> = {
     '1–1,000 sqft': { '1': { 'Weekly': 35, 'Bi-Weekly': 28, 'Twice a Week': 60, 'Once a Month': 45, 'One-Time': 70 },
                            '2': { 'Weekly': 40, 'Bi-Weekly': 32, 'Twice a Week': 65, 'Once a Month': 50, 'One-Time': 75 },
                            '3': { 'Weekly': 45, 'Bi-Weekly': 36, 'Twice a Week': 72, 'Once a Month': 55, 'One-Time': 85 },
-                           '4+': { 'Weekly': 55, 'Bi-Weekly': 44, 'Twice a Week': 88, 'Once a Month': 65, 'One-Time': 100 } },
+                           ...scaleDogPrices(base4Prices['1–1,000 sqft']) },
     '1,001–2,000 sqft': { '1': { 'Weekly': 40, 'Bi-Weekly': 32, 'Twice a Week': 68, 'Once a Month': 50, 'One-Time': 78 },
                            '2': { 'Weekly': 45, 'Bi-Weekly': 36, 'Twice a Week': 74, 'Once a Month': 55, 'One-Time': 85 },
                            '3': { 'Weekly': 50, 'Bi-Weekly': 40, 'Twice a Week': 82, 'Once a Month': 62, 'One-Time': 95 },
-                           '4+': { 'Weekly': 62, 'Bi-Weekly': 50, 'Twice a Week': 100, 'Once a Month': 75, 'One-Time': 112 } },
+                           ...scaleDogPrices(base4Prices['1,001–2,000 sqft']) },
     '2,001–3,000 sqft': { '1': { 'Weekly': 45, 'Bi-Weekly': 36, 'Twice a Week': 75, 'Once a Month': 55, 'One-Time': 85 },
                            '2': { 'Weekly': 50, 'Bi-Weekly': 40, 'Twice a Week': 82, 'Once a Month': 62, 'One-Time': 95 },
                            '3': { 'Weekly': 58, 'Bi-Weekly': 46, 'Twice a Week': 92, 'Once a Month': 70, 'One-Time': 108 },
-                           '4+': { 'Weekly': 70, 'Bi-Weekly': 56, 'Twice a Week': 112, 'Once a Month': 85, 'One-Time': 125 } },
+                           ...scaleDogPrices(base4Prices['2,001–3,000 sqft']) },
     '3,001–4,000 sqft': { '1': { 'Weekly': 50, 'Bi-Weekly': 40, 'Twice a Week': 85, 'Once a Month': 62, 'One-Time': 95 },
                            '2': { 'Weekly': 58, 'Bi-Weekly': 46, 'Twice a Week': 95, 'Once a Month': 70, 'One-Time': 108 },
                            '3': { 'Weekly': 65, 'Bi-Weekly': 52, 'Twice a Week': 105, 'Once a Month': 78, 'One-Time': 120 },
-                           '4+': { 'Weekly': 80, 'Bi-Weekly': 64, 'Twice a Week': 128, 'Once a Month': 95, 'One-Time': 140 } },
+                           ...scaleDogPrices(base4Prices['3,001–4,000 sqft']) },
     '4,001–5,000 sqft': { '1': { 'Weekly': 55, 'Bi-Weekly': 44, 'Twice a Week': 92, 'Once a Month': 68, 'One-Time': 105 },
                            '2': { 'Weekly': 65, 'Bi-Weekly': 52, 'Twice a Week': 105, 'Once a Month': 78, 'One-Time': 118 },
                            '3': { 'Weekly': 72, 'Bi-Weekly': 58, 'Twice a Week': 115, 'Once a Month': 85, 'One-Time': 130 },
-                           '4+': { 'Weekly': 88, 'Bi-Weekly': 70, 'Twice a Week': 140, 'Once a Month': 105, 'One-Time': 155 } },
+                           ...scaleDogPrices(base4Prices['4,001–5,000 sqft']) },
     '5,001–6,000 sqft': { '1': { 'Weekly': 62, 'Bi-Weekly': 50, 'Twice a Week': 100, 'Once a Month': 75, 'One-Time': 115 },
                            '2': { 'Weekly': 72, 'Bi-Weekly': 58, 'Twice a Week': 115, 'Once a Month': 85, 'One-Time': 128 },
                            '3': { 'Weekly': 80, 'Bi-Weekly': 64, 'Twice a Week': 128, 'Once a Month': 95, 'One-Time': 142 },
-                           '4+': { 'Weekly': 98, 'Bi-Weekly': 78, 'Twice a Week': 155, 'Once a Month': 115, 'One-Time': 170 } },
+                           ...scaleDogPrices(base4Prices['5,001–6,000 sqft']) },
     '6,001–7,000 sqft': { '1': { 'Weekly': 68, 'Bi-Weekly': 55, 'Twice a Week': 110, 'Once a Month': 82, 'One-Time': 125 },
                            '2': { 'Weekly': 78, 'Bi-Weekly': 62, 'Twice a Week': 125, 'Once a Month': 92, 'One-Time': 138 },
                            '3': { 'Weekly': 88, 'Bi-Weekly': 70, 'Twice a Week': 140, 'Once a Month': 105, 'One-Time': 155 },
-                           '4+': { 'Weekly': 108, 'Bi-Weekly': 86, 'Twice a Week': 172, 'Once a Month': 128, 'One-Time': 188 } },
+                           ...scaleDogPrices(base4Prices['6,001–7,000 sqft']) },
     '7,001–8,000 sqft': { '1': { 'Weekly': 75, 'Bi-Weekly': 60, 'Twice a Week': 120, 'Once a Month': 90, 'One-Time': 135 },
                            '2': { 'Weekly': 85, 'Bi-Weekly': 68, 'Twice a Week': 135, 'Once a Month': 100, 'One-Time': 150 },
                            '3': { 'Weekly': 95, 'Bi-Weekly': 76, 'Twice a Week': 152, 'Once a Month': 112, 'One-Time': 168 },
-                           '4+': { 'Weekly': 118, 'Bi-Weekly': 94, 'Twice a Week': 188, 'Once a Month': 140, 'One-Time': 205 } },
+                           ...scaleDogPrices(base4Prices['7,001–8,000 sqft']) },
     '8,001–9,000 sqft': { '1': { 'Weekly': 82, 'Bi-Weekly': 65, 'Twice a Week': 130, 'Once a Month': 98, 'One-Time': 145 },
                            '2': { 'Weekly': 92, 'Bi-Weekly': 74, 'Twice a Week': 148, 'Once a Month': 110, 'One-Time': 162 },
                            '3': { 'Weekly': 105, 'Bi-Weekly': 84, 'Twice a Week': 168, 'Once a Month': 125, 'One-Time': 182 },
-                           '4+': { 'Weekly': 128, 'Bi-Weekly': 102, 'Twice a Week': 205, 'Once a Month': 152, 'One-Time': 222 } },
+                           ...scaleDogPrices(base4Prices['8,001–9,000 sqft']) },
     '9,001–10,000 sqft': { '1': { 'Weekly': 86, 'Bi-Weekly': 69, 'Twice a Week': 138, 'Once a Month': 103, 'One-Time': 152 },
                             '2': { 'Weekly': 97, 'Bi-Weekly': 78, 'Twice a Week': 155, 'Once a Month': 115, 'One-Time': 170 },
                             '3': { 'Weekly': 110, 'Bi-Weekly': 88, 'Twice a Week': 175, 'Once a Month': 130, 'One-Time': 190 },
-                            '4+': { 'Weekly': 134, 'Bi-Weekly': 107, 'Twice a Week': 215, 'Once a Month': 160, 'One-Time': 232 } },
+                            ...scaleDogPrices(base4Prices['9,001–10,000 sqft']) },
     '10,001+ sqft':     { '1': { 'Weekly': 90, 'Bi-Weekly': 72, 'Twice a Week': 145, 'Once a Month': 108, 'One-Time': 160 },
                            '2': { 'Weekly': 102, 'Bi-Weekly': 82, 'Twice a Week': 162, 'Once a Month': 120, 'One-Time': 178 },
                            '3': { 'Weekly': 115, 'Bi-Weekly': 92, 'Twice a Week': 182, 'Once a Month': 135, 'One-Time': 198 },
-                           '4+': { 'Weekly': 140, 'Bi-Weekly': 112, 'Twice a Week': 225, 'Once a Month': 168, 'One-Time': 245 } },
+                           ...scaleDogPrices(base4Prices['10,001+ sqft']) },
   }
 
   const basic: PricingEntry[] = []
@@ -131,7 +159,7 @@ const savedQuotes: Quote[] = [
       { service: 'Weekly Cleanup', basePrice: 45, adjustedPrice: 90, quantity: 1 },
       { service: 'Initial Deep Clean', basePrice: 125, adjustedPrice: 250, quantity: 1 },
     ],
-    yardSize: '10,001+ sqft', dogCount: '4+', discount: 10, notes: "Large estate property, 4 dogs, hasn't been cleaned in months", status: 'draft', createdAt: 'Mar 26, 2026',
+    yardSize: '10,001+ sqft', dogCount: '4', discount: 10, notes: "Large estate property, 4 dogs, hasn't been cleaned in months", status: 'draft', createdAt: 'Mar 26, 2026',
   },
   {
     id: 'Q-003', customerName: 'Jennifer Lawson', phone: '(520) 555-0391', email: 'jlawson@outlook.com',
@@ -342,7 +370,7 @@ function PricingSettingsModal({
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Yard Size options: 1–1,000 sqft through 10,001+ sqft • Dogs: 1, 2, 3, 4+ • Frequency: Weekly, Bi-Weekly, Twice a Week, Once a Month, One-Time</p>
+                <p className="text-xs text-gray-400 mt-2">Yard Size options: 1–1,000 sqft through 10,001+ sqft • Dogs: 1–10 • Frequency: Weekly, Bi-Weekly, Twice a Week, Once a Month, One-Time</p>
                 <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-medium text-blue-700">💡 Pricing Note</p>
                   <p className="text-xs text-blue-600 mt-0.5"><strong>Weekly, Bi-Weekly, Twice a Week</strong> — enter the <strong>per-visit (weekly)</strong> price. Monthly cost is calculated automatically (price × dogs × 52 ÷ 12).</p>
@@ -551,7 +579,7 @@ export default function QuotesPage() {
   const initialCleanPrice = lookupPrice(yardSize, dogCount, 'One-Time', priceTier)
 
   // Calculate monthly price: per-visit price × number of dogs × 52 / 12
-  const numDogs = dogCount === '4+' ? 4 : parseInt(dogCount, 10)
+  const numDogs = parseInt(dogCount, 10) || 1
   const fullMonthlyPrice = currentPrice !== null
     ? (frequency === 'Once a Month' || frequency === 'One-Time')
       ? currentPrice
