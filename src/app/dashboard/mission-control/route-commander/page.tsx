@@ -1,33 +1,34 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Bell, CheckCircle2, Navigation, Route as RouteIcon, Shuffle, UserRound } from 'lucide-react'
-import { fieldTechs, jobs as initialJobs, routes as initialRoutes } from '@/lib/crm-data'
+import { useState } from "react";
+import { Bell, CheckCircle2, Navigation, Route as RouteIcon, Shuffle, UserRound } from "lucide-react";
+import { fieldTechs, jobs as initialJobs, routes as initialRoutes } from "@/lib/crm-data";
+import { LegacyRouteOptimizer } from "@/components/mission-control/LegacyRouteOptimizer";
 
 export default function RouteCommanderPage() {
-  const [routes, setRoutes] = useState(initialRoutes)
-  const [jobs, setJobs] = useState(initialJobs)
-  const [selectedRouteId, setSelectedRouteId] = useState(initialRoutes[0].id)
-  const selectedRoute = routes.find((route) => route.id === selectedRouteId) || routes[0]
-  const routeJobs = jobs.filter((job) => job.routeId === selectedRoute.id)
+  const [routes, setRoutes] = useState(initialRoutes);
+  const [jobs, setJobs] = useState(initialJobs);
+  const [selectedRouteId, setSelectedRouteId] = useState(initialRoutes[0].id);
+  const selectedRoute = routes.find((route) => route.id === selectedRouteId) || routes[0];
+  const routeJobs = jobs.filter((job) => job.routeId === selectedRoute.id);
 
   const assignTech = (techId: string) => {
-    const tech = fieldTechs.find((item) => item.id === techId)
-    if (!tech) return
-    setRoutes((prev) => prev.map((route) => route.id === selectedRoute.id ? { ...route, techId: tech.id, techName: tech.name } : route))
-    setJobs((prev) => prev.map((job) => job.routeId === selectedRoute.id ? { ...job, techId: tech.id, techName: tech.name } : job))
-  }
+    const tech = fieldTechs.find((item) => item.id === techId);
+    if (!tech) return;
+    setRoutes((prev) => prev.map((route) => route.id === selectedRoute.id ? { ...route, techId: tech.id, techName: tech.name } : route));
+    setJobs((prev) => prev.map((job) => job.routeId === selectedRoute.id ? { ...job, techId: tech.id, techName: tech.name } : job));
+  };
 
   const updateJobStatus = (jobId: string) => {
-    setJobs((prev) => prev.map((job) => job.id === jobId ? { ...job, status: job.status === 'completed' ? 'scheduled' : 'completed' } : job))
-  }
+    setJobs((prev) => prev.map((job) => job.id === jobId ? { ...job, status: job.status === "completed" ? "scheduled" : "completed" } : job));
+  };
 
   const reorderStops = () => {
-    setJobs((prev) => [...prev].sort((a, b) => a.etaMinutes - b.etaMinutes))
-  }
+    setJobs((prev) => [...prev].sort((a, b) => a.etaMinutes - b.etaMinutes));
+  };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1 text-xs font-semibold mb-3">
@@ -44,7 +45,7 @@ export default function RouteCommanderPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {routes.map((route) => (
-          <button key={route.id} onClick={() => setSelectedRouteId(route.id)} className={`text-left rounded-xl border p-5 bg-white transition-colors ${selectedRouteId === route.id ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-gray-200 hover:border-emerald-300'}`}>
+          <button key={route.id} onClick={() => setSelectedRouteId(route.id)} className={`text-left rounded-xl border p-5 bg-white transition-colors ${selectedRouteId === route.id ? "border-emerald-500 ring-2 ring-emerald-100" : "border-gray-200 hover:border-emerald-300"}`}>
             <div className="flex items-center gap-2 text-emerald-700 mb-3"><RouteIcon size={18} /><span className="text-sm font-semibold">{route.day}</span></div>
             <h2 className="font-bold text-gray-900">{route.name}</h2>
             <p className="text-sm text-gray-500 mt-1">{route.techName} • {route.zone}</p>
@@ -97,20 +98,38 @@ export default function RouteCommanderPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-gray-900">{job.customerName}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : job.status === 'in-progress' ? 'bg-blue-100 text-blue-700' : job.status === 'skipped' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>{job.status}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${job.status === "completed" ? "bg-emerald-100 text-emerald-700" : job.status === "in-progress" ? "bg-blue-100 text-blue-700" : job.status === "skipped" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"}`}>{job.status}</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">{job.address} • {job.frequency} • {job.zone}</p>
-                  <p className="text-xs text-gray-400 mt-2">Estimated drive from previous stop: {index === 0 ? 'Depot start' : `${8 + index * 4} min`} • Service window {new Date(job.scheduledAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                  <p className="text-xs text-gray-400 mt-2">Estimated drive from previous stop: {index === 0 ? "Depot start" : `${8 + index * 4} min`} • Service window {new Date(job.scheduledAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1"><Bell size={14} /> On the way ({job.etaMinutes}m)</button>
-                  <button onClick={() => updateJobStatus(job.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 flex items-center gap-1"><CheckCircle2 size={14} /> {job.status === 'completed' ? 'Reopen' : 'Complete'}</button>
+                  <button onClick={() => updateJobStatus(job.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 flex items-center gap-1"><CheckCircle2 size={14} /> {job.status === "completed" ? "Reopen" : "Complete"}</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Legacy Route Optimizer tools</h2>
+            <p className="text-sm text-gray-600 mt-1">The full old Route Optimizer now lives below this section so you can compare both versions, keep the map, and use address fit testing before trimming duplicates.</p>
+          </div>
+          <div className="inline-flex items-center rounded-full border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700">Map + address fit finder preserved</div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+        <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+          <h3 className="text-lg font-semibold text-gray-900">Old Route Optimizer section</h3>
+          <p className="text-sm text-gray-500 mt-1">Embedded below the new Route Commander so you can review overlap and decide what stays.</p>
+        </div>
+        <LegacyRouteOptimizer />
+      </div>
     </div>
-  )
+  );
 }
