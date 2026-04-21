@@ -586,39 +586,64 @@ export default function QuotesPage() {
       : Math.round((currentPrice * numDogs * 52 / 12) * 100) / 100
     : null
 
-  // Pro-rate logic: if recurring start date is after the first week of the month (Sun-Sat),
-  // calculate remaining weeks in that month and pro-rate
-  const calculateProratedMonth = (): { prorated: number | null; fullMonthly: number | null; remainingWeeks: number; totalWeeks: number; isProrated: boolean } => {
-    if (fullMonthlyPrice === null || !recurringStartDate || frequency === 'Once a Month' || frequency === 'One-Time') return { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false }
+  // Pro-rate logic: prorated first month = (visits remaining in recurring start month) × per-visit cost.
+  // If the recurring start month is AFTER the initial-clean month, there's nothing to prorate and
+  // no current-month charge — but the "Following Months" monthly fee should still be shown.
+  const calculateProratedMonth = (): {
+    prorated: number | null
+    fullMonthly: number | null
+    remainingWeeks: number
+    totalWeeks: number
+    isProrated: boolean
+    recurringInFutureMonth: boolean
+    visitsInFirstMonth: number
+  } => {
+    const base = { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false, recurringInFutureMonth: false, visitsInFirstMonth: 0 }
+    if (fullMonthlyPrice === null || currentPrice === null || !recurringStartDate || frequency === 'Once a Month' || frequency === 'One-Time') return base
 
     const startDate = new Date(recurringStartDate + 'T00:00:00')
     const year = startDate.getFullYear()
     const month = startDate.getMonth()
-
-    // Find the first Saturday of the month (end of first week Sun-Sat)
-    const firstOfMonth = new Date(year, month, 1)
-    const firstDayOfWeek = firstOfMonth.getDay() // 0=Sun
-    // First Saturday = day (6 - firstDayOfWeek) + 1, but if first day is Sunday, first Sat is day 7
-    const firstSatDay = firstDayOfWeek === 0 ? 7 : (6 - firstDayOfWeek + 1)
-    const firstSatDate = new Date(year, month, firstSatDay)
-
-    // If start date is within the first week (on or before first Saturday), no proration
-    if (startDate <= firstSatDate) return { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false }
-
-    // Count total weeks and remaining weeks in the month
     const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const dayOfMonth = startDate.getDate()
-    const remainingDays = daysInMonth - dayOfMonth + 1
-    const totalWeeks = Math.round(daysInMonth / 7 * 10) / 10
-    const remainingWeeks = Math.round(remainingDays / 7 * 10) / 10
+    const endOfMonth = new Date(year, month, daysInMonth)
 
-    const prorated = Math.round((fullMonthlyPrice * (remainingDays / daysInMonth)) * 100) / 100
-    return { prorated, fullMonthly: fullMonthlyPrice, remainingWeeks, totalWeeks, isProrated: true }
+    const stepDays = frequency === 'Bi-Weekly' ? 14 : 7
+    const visitsPerWeek = frequency === 'Three Times a Week' ? 3 : frequency === 'Twice a Week' ? 2 : 1
+
+    let serviceWeeksInMonth = 0
+    for (let d = new Date(startDate); d <= endOfMonth; d.setDate(d.getDate() + stepDays)) {
+      serviceWeeksInMonth++
+    }
+    const visitsInFirstMonth = serviceWeeksInMonth * visitsPerWeek
+
+    let refYear = year
+    let refMonth = month
+    if (includeInitialClean && initialCleanDate) {
+      const icd = new Date(initialCleanDate + 'T00:00:00')
+      refYear = icd.getFullYear()
+      refMonth = icd.getMonth()
+    }
+
+    const recurringMonthIndex = year * 12 + month
+    const refMonthIndex = refYear * 12 + refMonth
+
+    if (recurringMonthIndex > refMonthIndex) {
+      return { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false, recurringInFutureMonth: true, visitsInFirstMonth: 0 }
+    }
+
+    const fullServiceWeeksPerMonth = frequency === 'Bi-Weekly' ? 2 : 4
+
+    if (serviceWeeksInMonth >= fullServiceWeeksPerMonth) {
+      return { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: serviceWeeksInMonth, totalWeeks: fullServiceWeeksPerMonth, isProrated: false, recurringInFutureMonth: false, visitsInFirstMonth }
+    }
+
+    const prorated = Math.round(currentPrice * visitsInFirstMonth * 100) / 100
+    return { prorated, fullMonthly: fullMonthlyPrice, remainingWeeks: serviceWeeksInMonth, totalWeeks: fullServiceWeeksPerMonth, isProrated: true, recurringInFutureMonth: false, visitsInFirstMonth }
   }
 
-  const prorationInfo = quoteMode === 'month' ? calculateProratedMonth() : { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false }
+  const prorationInfo = quoteMode === 'month' ? calculateProratedMonth() : { prorated: null, fullMonthly: fullMonthlyPrice, remainingWeeks: 0, totalWeeks: 0, isProrated: false, recurringInFutureMonth: false, visitsInFirstMonth: 0 }
 
-  const monthlyPrice = prorationInfo.isProrated ? prorationInfo.prorated : fullMonthlyPrice
+  const monthlyPrice = prorationInfo.recurringInFutureMonth ? 0 : (prorationInfo.isProrated ? prorationInfo.prorated : fullMonthlyPrice)
   const displayPrice = quoteMode === 'month' ? monthlyPrice : currentPrice
   const priceLabel = quoteMode === 'month' ? '/month' : '/visit'
 
@@ -638,13 +663,15 @@ export default function QuotesPage() {
       })
     }
 
-    // Add the recurring service
-    newServices.push({
-      service: prorationInfo.isProrated ? `${serviceName} (pro-rated first month)` : serviceName,
-      basePrice: displayPrice,
-      adjustedPrice: displayPrice,
-      quantity: 1,
-    })
+    // Add the recurring service (skip if recurring starts in a future month — nothing to charge now)
+    if (!(quoteMode === 'month' && prorationInfo.recurringInFutureMonth)) {
+      newServices.push({
+        service: prorationInfo.isProrated ? `${serviceName} (pro-rated first month)` : serviceName,
+        basePrice: displayPrice,
+        adjustedPrice: displayPrice,
+        quantity: 1,
+      })
+    }
 
     setSelectedServices([...selectedServices, ...newServices])
   }
@@ -928,7 +955,17 @@ export default function QuotesPage() {
                       ⚡ Pro-rated first month: <span className="font-bold">${prorationInfo.prorated.toFixed(2)}</span>
                     </p>
                     <p className="text-xs text-amber-600 mt-0.5">
-                      Start date is after the first week — first month will be pro-rated. Full monthly rate of ${fullMonthlyPrice.toFixed(2)} starts the following month.
+                      {prorationInfo.visitsInFirstMonth} visit{prorationInfo.visitsInFirstMonth === 1 ? '' : 's'} this month × ${currentPrice?.toFixed(2)}/visit. Full monthly rate of ${fullMonthlyPrice.toFixed(2)} starts the following month.
+                    </p>
+                  </div>
+                )}
+                {prorationInfo.recurringInFutureMonth && quoteMode === 'month' && fullMonthlyPrice !== null && (
+                  <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs font-medium text-blue-700">
+                      ℹ️ Recurring service starts next month — nothing to prorate.
+                    </p>
+                    <p className="text-xs text-blue-600 mt-0.5">
+                      First monthly charge of ${fullMonthlyPrice.toFixed(2)} begins {new Date(recurringStartDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.
                     </p>
                   </div>
                 )}
@@ -1033,7 +1070,7 @@ export default function QuotesPage() {
                     {recurringStartDate && (
                       <p className="text-xs text-gray-400 mt-0.5">Recurring starts: {new Date(recurringStartDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                     )}
-                    {prorationInfo.isProrated && fullMonthlyPrice !== null && (
+                    {(prorationInfo.isProrated || prorationInfo.recurringInFutureMonth) && fullMonthlyPrice !== null && (
                       <p className="text-xs text-blue-600 font-medium mt-1.5">
                         Following months: ${fullMonthlyPrice.toFixed(2)}/month
                       </p>
