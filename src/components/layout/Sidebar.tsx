@@ -57,6 +57,8 @@ const navSections = [
       { name: 'Turf Tracker', href: '/dashboard/turf-tracker', icon: 'Crosshair' },
       { name: 'Ad Quick Launch', href: '/dashboard/ad-quick-launch', icon: 'Rocket' },
       { name: 'Campaigns', href: '/dashboard/campaigns', icon: 'Megaphone' },
+      { name: 'Referral Program', href: '/dashboard/referral-program', icon: 'Users' },
+      { name: 'E-Gift Cards', href: '/dashboard/e-gift-cards', icon: 'DollarSign' },
     ],
   },
   {
