@@ -7,7 +7,8 @@ import {
   LayoutDashboard, BarChart3, Megaphone, Rocket, Target, GraduationCap,
   PenTool, Palette, Building2, MapPin, Calendar, Search, Plug, HelpCircle,
   ChevronLeft, ChevronRight, LogOut, Phone, DollarSign, FileText, Star,
-  Map, Clock, MessageSquare, Users, Crosshair, TrendingUp
+  Map, Clock, MessageSquare, Users, Crosshair, TrendingUp, Command,
+  Navigation, CalendarClock, Share2, MessageCircle, CreditCard, Settings
 } from 'lucide-react'
 import { ScoopLogo } from '@/components/ui/ScoopLogo'
 
@@ -15,9 +16,23 @@ const iconMap: Record<string, any> = {
   LayoutDashboard, BarChart3, Megaphone, Rocket, Target, GraduationCap,
   PenTool, Palette, Building2, MapPin, Calendar, Search, Plug, HelpCircle,
   Phone, DollarSign, FileText, Star, Map, Clock, MessageSquare, Users, Crosshair, TrendingUp,
+  Command, Navigation, CalendarClock, Share2, MessageCircle, CreditCard, Settings,
 }
 
 const navSections = [
+  {
+    label: 'MISSION CONTROL',
+    items: [
+      { name: 'Dashboard', href: '/dashboard/mission-control', icon: 'Command' },
+      { name: 'Launch Pad', href: '/dashboard/mission-control/launch-pad', icon: 'Rocket' },
+      { name: 'Route Commander', href: '/dashboard/mission-control/route-commander', icon: 'Navigation' },
+      { name: 'Scoop Scheduler', href: '/dashboard/mission-control/scoop-scheduler', icon: 'CalendarClock' },
+      { name: 'Referral Engine', href: '/dashboard/mission-control/referral-engine', icon: 'Share2' },
+      { name: 'Communication Center', href: '/dashboard/mission-control/communications', icon: 'MessageCircle' },
+      { name: 'Billing Center', href: '/dashboard/mission-control/billing', icon: 'CreditCard' },
+      { name: 'CRM Settings', href: '/dashboard/mission-control/settings', icon: 'Settings' },
+    ],
+  },
   {
     label: 'OPERATIONS SNAPSHOT',
     items: [
@@ -32,7 +47,6 @@ const navSections = [
       { name: 'Revenue & ROI', href: '/dashboard/revenue', icon: 'DollarSign' },
       { name: 'KPIs', href: '/dashboard/kpis', icon: 'BarChart3' },
       { name: 'Service Area', href: '/dashboard/service-area', icon: 'Map' },
-      { name: 'Route Optimizer', href: '/dashboard/route-optimizer', icon: 'Map' },
       { name: 'Google Profile', href: '/dashboard/google-profile', icon: 'MapPin' },
       { name: 'Review Requests', href: '/dashboard/reviews', icon: 'Star' },
       { name: 'Rival Radar', href: '/dashboard/competitors', icon: 'Search' },
@@ -57,7 +71,6 @@ const navSections = [
       { name: 'Turf Tracker', href: '/dashboard/turf-tracker', icon: 'Crosshair' },
       { name: 'Ad Quick Launch', href: '/dashboard/ad-quick-launch', icon: 'Rocket' },
       { name: 'Campaigns', href: '/dashboard/campaigns', icon: 'Megaphone' },
-      { name: 'Referral Program', href: '/dashboard/referral-program', icon: 'Users' },
       { name: 'E-Gift Cards', href: '/dashboard/e-gift-cards', icon: 'DollarSign' },
     ],
   },

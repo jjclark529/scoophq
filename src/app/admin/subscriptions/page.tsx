@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CreditCard, Check, Star, Zap, Crown, Edit3, Plus, DollarSign, Users, ArrowRight, X, Trash2 } from 'lucide-react'
+import { CreditCard, Check, Star, Zap, Crown, Edit3, Plus, DollarSign, Users, ArrowRight, X, Trash2, ToggleLeft } from 'lucide-react'
 
 type Plan = {
   id: string
@@ -13,6 +13,7 @@ type Plan = {
   paypalPlanId: string
   active: boolean
   subscribers: number
+  includesCRM?: boolean
 }
 
 const initialPlans: Plan[] = [
@@ -34,6 +35,7 @@ const initialPlans: Plan[] = [
     paypalPlanId: 'P-STARTER-MONTHLY',
     active: true,
     subscribers: 18,
+    includesCRM: false,
   },
   {
     id: 'pro',
@@ -56,11 +58,33 @@ const initialPlans: Plan[] = [
     paypalPlanId: 'P-PRO-MONTHLY',
     active: true,
     subscribers: 19,
+    includesCRM: false,
+  },
+  {
+    id: 'pro-crm',
+    name: 'Pro + CRM',
+    price: 349,
+    interval: 'month',
+    features: [
+      'Everything in Pro',
+      'Mission Control CRM',
+      'Launch Pad lead pipeline',
+      'Route Commander + Scoop Scheduler',
+      'Communication Center with SMS workflows',
+      'Billing Center + subscription controls',
+      'Referral Engine automation',
+      'CRM settings and onboarding tools',
+    ],
+    stripePriceId: 'price_pro_crm_monthly',
+    paypalPlanId: 'P-PRO-CRM-MONTHLY',
+    active: true,
+    subscribers: 8,
+    includesCRM: true,
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 299,
+    price: 449,
     interval: 'month',
     features: [
       'Unlimited active clients',
@@ -77,18 +101,21 @@ const initialPlans: Plan[] = [
     paypalPlanId: 'P-ENTERPRISE-MONTHLY',
     active: true,
     subscribers: 5,
+    includesCRM: true,
   },
 ]
 
 const planIcons: Record<string, any> = {
   starter: Zap,
   pro: Star,
+  'pro-crm': CreditCard,
   enterprise: Crown,
 }
 
 const planColors: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   starter: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-600' },
   pro: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-600' },
+  'pro-crm': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-600' },
   enterprise: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-600' },
 }
 
@@ -98,6 +125,7 @@ export default function SubscriptionsPage() {
   const [showPaypalSetup, setShowPaypalSetup] = useState(false)
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
   const [newFeature, setNewFeature] = useState('')
+  const [crmAddonEnabled, setCrmAddonEnabled] = useState(true)
 
   const totalMRR = plans.reduce((sum, p) => sum + (p.active ? p.price * p.subscribers : 0), 0)
 
@@ -303,9 +331,19 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2"><ToggleLeft className="text-emerald-600" size={18} /> CRM add-on</h2>
+          <p className="text-sm text-gray-500 mt-1">Offer Mission Control as an add-on for lower tiers or bundle it in Pro + CRM and Enterprise.</p>
+        </div>
+        <button onClick={() => setCrmAddonEnabled(prev => !prev)} className={`px-4 py-2 rounded-lg text-sm font-semibold ${crmAddonEnabled ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
+          {crmAddonEnabled ? 'CRM Add-on Enabled' : 'CRM Add-on Disabled'}
+        </button>
+      </div>
+
       {/* Plans */}
       <h2 className="text-lg font-semibold mb-3">Plans</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {plans.map((plan) => {
           const Icon = planIcons[plan.id]
           const colors = planColors[plan.id]
@@ -313,6 +351,9 @@ export default function SubscriptionsPage() {
             <div key={plan.id} className={`bg-white rounded-xl border-2 ${colors.border} p-6 relative`}>
               {plan.id === 'pro' && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>
+              )}
+              {plan.includesCRM && (
+                <div className="absolute top-4 right-4 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full">CRM INCLUDED</div>
               )}
               <div className="flex items-center gap-2 mb-4">
                 <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center`}>
@@ -339,9 +380,10 @@ export default function SubscriptionsPage() {
                 <button onClick={() => setEditingPlan({ ...plan })} className={`flex-1 ${colors.badge} text-white py-2 rounded-lg text-sm font-medium hover:opacity-90`}>Edit Plan</button>
                 <button onClick={() => togglePlanActive(plan.id)} className="border border-gray-200 px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{plan.active ? 'Disable' : 'Enable'}</button>
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
+              <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 space-y-1">
                 <p>Stripe: {plan.stripePriceId}</p>
                 <p>PayPal: {plan.paypalPlanId}</p>
+                <p>CRM access: {plan.includesCRM ? 'Included' : crmAddonEnabled ? 'Available as add-on' : 'Not included'}</p>
               </div>
             </div>
           )
